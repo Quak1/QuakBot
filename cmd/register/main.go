@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
@@ -24,6 +26,24 @@ var commands = []*discordgo.ApplicationCommand{
 			discordgo.InteractionContextPrivateChannel,
 		},
 	},
+}
+
+func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	cmdName := i.ApplicationCommandData().Name
+	if cmdName == "test" {
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Flags:   discordgo.MessageFlagsEphemeral,
+				Content: "Test command ran successfully!",
+			},
+		})
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		log.Println("Received unknown command: ", cmdName)
+	}
 }
 
 func main() {
@@ -64,4 +84,10 @@ func main() {
 	for _, cmd := range cmds {
 		fmt.Printf("- %s: %s\n", cmd.Name, cmd.Description)
 	}
+
+	dg.AddHandler(commandHandler)
+
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
 }
