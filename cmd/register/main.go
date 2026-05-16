@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
+	rpsgame "github.com/Quak1/QuakBot/internal/rpsGame"
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 )
@@ -28,21 +31,16 @@ var commands = []*discordgo.ApplicationCommand{
 	},
 }
 
-func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	cmdName := i.ApplicationCommandData().Name
-	if cmdName == "test" {
-		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Test command ran successfully!",
-			},
-		})
-		if err != nil {
-			log.Println(err)
-		}
-	} else {
-		log.Println("Received unknown command: ", cmdName)
+func testCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags:   discordgo.MessageFlagsEphemeral,
+			Content: "Test command ran successfully!",
+		},
+	})
+	if err != nil {
+		log.Println(err)
 	}
 }
 
@@ -68,6 +66,7 @@ func main() {
 	appID := dg.State.User.ID
 
 	log.Println("Registering commands...")
+	commands = append(commands, rpsgame.GetRPSCommands()...)
 	for _, c := range commands {
 		_, err := dg.ApplicationCommandCreate(appID, "", c)
 		if err != nil {
@@ -85,7 +84,28 @@ func main() {
 		fmt.Printf("- %s: %s\n", cmd.Name, cmd.Description)
 	}
 
-	dg.AddHandler(commandHandler)
+	handlers := map[string]func(*discordgo.Session, *discordgo.InteractionCreate){
+		"test": testCommandHandler,
+	}
+	maps.Copy(handlers, rpsgame.GetRPSCommandHandlers())
+	dg.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		var name string
+		switch i.Type {
+		case discordgo.InteractionApplicationCommand:
+			name = i.ApplicationCommandData().Name
+		case discordgo.InteractionMessageComponent:
+			name = i.MessageComponentData().CustomID
+			if j := strings.IndexByte(name, '-'); j != -1 {
+				name = name[:j]
+			}
+		}
+
+		fmt.Println("command received:", name)
+
+		if h, ok := handlers[name]; ok {
+			h(s, i)
+		}
+	})
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
