@@ -56,11 +56,7 @@ var (
 
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		"challenge": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			user := i.User
-			if user == nil {
-				user = i.Member.User
-			}
-			userID := user.ID
+			userID := getUserID(i)
 			option := i.ApplicationCommandData().Options[0].Value
 
 			activeGames[i.ID] = activeGame{
@@ -90,6 +86,7 @@ var (
 			}
 		},
 		"accept_button": handleAccept,
+		"select_choice": handleItemChoice,
 	}
 )
 
@@ -99,4 +96,12 @@ func GetRPSCommands() []*discordgo.ApplicationCommand {
 
 func GetRPSCommandHandlers() map[string]func(*discordgo.Session, *discordgo.InteractionCreate) {
 	return commandHandlers
+}
+
+func getUserID(i *discordgo.InteractionCreate) string {
+	user := i.User
+	if user == nil {
+		user = i.Member.User
+	}
+	return user.ID
 }
