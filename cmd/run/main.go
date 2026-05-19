@@ -36,7 +36,7 @@ func main() {
 		"test": testCommandHandler,
 	}
 
-	maps.Copy(handlers, rpsgame.GetRPSCommandHandlers())
+	maps.Copy(handlers, rpsgame.GetRPSHandlers())
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		var name string
 		switch i.Type {

@@ -1,35 +1,12 @@
 package rpsgame
 
 import (
-	"fmt"
-	"log"
-
+	"github.com/Quak1/QuakBot/internal/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
-func createCommandChoices() []*discordgo.ApplicationCommandOptionChoice {
-	commandChoices := []*discordgo.ApplicationCommandOptionChoice{}
-
-	for k := range rpsChoices {
-		commandChoices = append(commandChoices, &discordgo.ApplicationCommandOptionChoice{
-			Name:  firstToUpper(k),
-			Value: k,
-		})
-	}
-
-	return commandChoices
-}
-
-func firstToUpper(s string) string {
-	if len(s) != 0 && s[0] >= 'a' && s[0] <= 'z' {
-		return string(s[0]-32) + s[1:]
-	}
-
-	return s
-}
-
-var (
-	commands = []*discordgo.ApplicationCommand{
+func GetRPSCommands() []*discordgo.ApplicationCommand {
+	cmds := []*discordgo.ApplicationCommand{
 		{
 			Name:        "challenge",
 			Description: "Challenge to a match of rock paper scissors",
@@ -39,7 +16,7 @@ var (
 					Name:        "item",
 					Description: "Pick your item",
 					Required:    true,
-					Choices:     createCommandChoices(),
+					Choices:     createChallengeCmdChoices(),
 				},
 			},
 			Type: discordgo.ChatApplicationCommand,
@@ -54,54 +31,18 @@ var (
 		},
 	}
 
-	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		"challenge": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			userID := getUserID(i)
-			option := i.ApplicationCommandData().Options[0].Value
-
-			activeGames[i.ID] = activeGame{
-				userID: userID,
-				object: option.(string),
-			}
-
-			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: fmt.Sprintf("Rock papers scissors challenge from <@%s> : %s", userID, option),
-					Components: []discordgo.MessageComponent{
-						discordgo.ActionsRow{
-							Components: []discordgo.MessageComponent{
-								discordgo.Button{
-									CustomID: fmt.Sprintf("accept_button-%s", i.ID),
-									Label:    "Accept",
-									Style:    discordgo.PrimaryButton,
-								},
-							},
-						},
-					},
-				},
-			})
-			if err != nil {
-				log.Println(err)
-			}
-		},
-		"accept_button": handleAccept,
-		"select_choice": handleItemChoice,
-	}
-)
-
-func GetRPSCommands() []*discordgo.ApplicationCommand {
-	return commands
+	return cmds
 }
 
-func GetRPSCommandHandlers() map[string]func(*discordgo.Session, *discordgo.InteractionCreate) {
-	return commandHandlers
-}
+func createChallengeCmdChoices() []*discordgo.ApplicationCommandOptionChoice {
+	commandChoices := []*discordgo.ApplicationCommandOptionChoice{}
 
-func getUserID(i *discordgo.InteractionCreate) string {
-	user := i.User
-	if user == nil {
-		user = i.Member.User
+	for k := range rpsObjects {
+		commandChoices = append(commandChoices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  utils.FirstLetterToUpper(k),
+			Value: k,
+		})
 	}
-	return user.ID
+
+	return commandChoices
 }
