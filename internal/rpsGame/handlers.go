@@ -23,16 +23,8 @@ func GetRPSHandlers() map[string]func(*discordgo.Session, *discordgo.Interaction
 	}
 }
 
-func getUserID(i *discordgo.InteractionCreate) string {
-	user := i.User
-	if user == nil {
-		user = i.Member.User
-	}
-	return user.ID
-}
-
 func handleChallengeCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	userID := getUserID(i)
+	userID := utils.GetUserID(i)
 	option := i.ApplicationCommandData().Options[0].Value
 
 	activeGames[i.ID] = activeGame{
@@ -111,7 +103,7 @@ func handleObjectChoiceInt(s *discordgo.Session, i *discordgo.InteractionCreate)
 	gameID := strings.ReplaceAll(data.CustomID, SelectChoice, "")
 
 	if game, ok := activeGames[gameID]; ok {
-		userID := getUserID(i)
+		userID := utils.GetUserID(i)
 		object := data.Values[0]
 		result := getResult(game, activeGame{userID: userID, object: object})
 
