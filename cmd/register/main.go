@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Quak1/QuakBot/internal/observer"
 	rpsgame "github.com/Quak1/QuakBot/internal/rpsGame"
 	"github.com/bwmarrin/discordgo"
 )
@@ -42,6 +43,7 @@ func main() {
 
 	var commands = []*discordgo.ApplicationCommand{testCommand}
 	commands = append(commands, rpsgame.GetRPSCommands()...)
+	commands = append(commands, observer.GetObserverCommands()...)
 
 	registerCommands(s, "", commands)
 }

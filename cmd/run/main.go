@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/Quak1/QuakBot/internal/observer"
 	rpsgame "github.com/Quak1/QuakBot/internal/rpsGame"
 	"github.com/bwmarrin/discordgo"
 )
@@ -32,11 +33,14 @@ func main() {
 		log.Fatal("Error creating Discord session:", err)
 	}
 
+	s.Identify.Intents |= discordgo.IntentGuildPresences
+
 	handlers := map[string]func(*discordgo.Session, *discordgo.InteractionCreate){
 		"test": testCommandHandler,
 	}
 
 	maps.Copy(handlers, rpsgame.GetRPSHandlers())
+	maps.Copy(handlers, observer.GetObserverHandlers())
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		var name string
 		switch i.Type {
@@ -53,6 +57,8 @@ func main() {
 			h(s, i)
 		}
 	})
+
+	s.AddHandler(observer.HandlePresenceEvent)
 
 	err = s.Open()
 	if err != nil {
