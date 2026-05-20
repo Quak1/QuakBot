@@ -8,6 +8,14 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// monitoredUserID -> registered in guildID -> notification to channelID
+type UserStatus struct {
+	status discordgo.Status
+	guild  map[string]map[string]struct{}
+}
+
+var MonitoredUsers = map[string]*UserStatus{}
+
 func GetObserverCommands() []*discordgo.ApplicationCommand {
 	cmds := []*discordgo.ApplicationCommand{
 		{
@@ -33,17 +41,16 @@ func GetObserverHandlers() map[string]func(*discordgo.Session, *discordgo.Intera
 	}
 }
 
-// monitoredUserID -> registered in guildID -> notification to channelID
-var MonitoredUsers = map[string]map[string]map[string]struct{}{}
-
 func addMonitoredUser(userID, guildID, channelID string) {
 	if MonitoredUsers[userID] == nil {
-		MonitoredUsers[userID] = make(map[string]map[string]struct{})
+		MonitoredUsers[userID] = &UserStatus{
+			guild: make(map[string]map[string]struct{}),
+		}
 	}
-	if MonitoredUsers[userID][guildID] == nil {
-		MonitoredUsers[userID][guildID] = make(map[string]struct{})
+	if MonitoredUsers[userID].guild[guildID] == nil {
+		MonitoredUsers[userID].guild[guildID] = make(map[string]struct{})
 	}
-	MonitoredUsers[userID][guildID][channelID] = struct{}{}
+	MonitoredUsers[userID].guild[guildID][channelID] = struct{}{}
 }
 
 func handleWatchCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -87,7 +94,23 @@ func handleWatchCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func HandlePresenceEvent(s *discordgo.Session, p *discordgo.PresenceUpdate) {
-	if channels, ok := MonitoredUsers[p.User.ID][p.GuildID]; ok {
+	userID := p.User.ID
+	if _, ok := MonitoredUsers[userID]; !ok {
+		return
+	}
+
+	if channels, ok := MonitoredUsers[userID].guild[p.GuildID]; ok {
+		for _, a := range p.Activities {
+			log.Printf("%+v\n", a)
+		}
+		log.Println("Activities ----^")
+
+		if MonitoredUsers[userID].status == p.Status {
+			return
+		} else {
+			MonitoredUsers[userID].status = p.Status
+		}
+
 		for c := range channels {
 			var msg string
 			g, err := s.Guild(p.GuildID)
