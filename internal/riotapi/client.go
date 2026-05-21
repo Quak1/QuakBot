@@ -6,7 +6,9 @@ import (
 )
 
 type Client struct {
-	Account *AccountClient
+	Account   *AccountClient
+	Spectator *SpectatorClient
+	League    *LeagueClient
 }
 
 func NewClient(region Region, apiKey string) *Client {
@@ -15,6 +17,8 @@ func NewClient(region Region, apiKey string) *Client {
 	})
 
 	return &Client{
-		Account: NewAccountClient(baseClient),
+		Account:   NewAccountClient(baseClient),
+		Spectator: newSpectatorClient(baseClient),
+		League:    newLeagueClient(baseClient),
 	}
 }

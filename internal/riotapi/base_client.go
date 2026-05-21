@@ -60,7 +60,6 @@ func (c *baseClient) do(req *http.Request, data any) error {
 	}
 
 	return nil
-
 }
 
 func (c *baseClient) DoGet(endpoint string, data any) error {
