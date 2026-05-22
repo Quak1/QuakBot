@@ -23,6 +23,7 @@ type queueRank struct {
 	division string
 	wins     int
 	loses    int
+	points   int
 }
 
 type gameTeams struct {
@@ -124,6 +125,7 @@ func getGamePlayerInfo(rc *riotapi.Client, game *riotapi.CurrentGameInfo) (*game
 				division: r.Rank,
 				wins:     r.Wins,
 				loses:    r.Losses,
+				points:   r.LeaguePoints,
 			}
 			switch r.QueueType {
 			case "RANKED_SOLO_5x5":
@@ -160,7 +162,7 @@ func parseTeam(team []*player, color int) discordgo.Container {
 }
 
 func parsePlayer(p *player) discordgo.Section {
-	strFormat := "   :%s: :%s:   `%03d/%03d %02d%%`"
+	strFormat := "  :%s::%s: `%4d`   `%03d/%03d %02d%%`"
 	name := fmt.Sprintf("### %s\n", p.name)
 
 	var soloWr int
@@ -169,12 +171,28 @@ func parsePlayer(p *player) discordgo.Section {
 	} else {
 		soloWr = p.solo.wins * 100 / (p.solo.wins + p.solo.loses)
 	}
-	soloStr := "`S:`" + fmt.Sprintf(strFormat, leagueToEmoji[p.solo.league], divisionToEmoji[p.solo.division], p.solo.wins, p.solo.loses, soloWr)
+	soloStr := "`S:`" + fmt.Sprintf(
+		strFormat,
+		leagueToEmoji[p.solo.league],
+		divisionToEmoji[p.solo.division],
+		p.solo.points,
+		p.solo.wins,
+		p.solo.loses,
+		soloWr,
+	)
 
 	flexStr := ""
 	if p.flex != nil {
 		flexWr := p.flex.wins * 100 / (p.flex.wins + p.flex.loses)
-		flexStr = "`F:`" + fmt.Sprintf(strFormat, leagueToEmoji[p.flex.league], divisionToEmoji[p.flex.division], p.flex.wins, p.flex.loses, flexWr)
+		flexStr = "`F:`" + fmt.Sprintf(
+			strFormat,
+			leagueToEmoji[p.flex.league],
+			divisionToEmoji[p.flex.division],
+			p.flex.points,
+			p.flex.wins,
+			p.flex.loses,
+			flexWr,
+		)
 	}
 
 	if p.championNameID == "Fiddlesticks" {
