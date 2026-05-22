@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Quak1/QuakBot/internal/observer"
+	"github.com/Quak1/QuakBot/internal/riotbot"
 	rpsgame "github.com/Quak1/QuakBot/internal/rpsGame"
 	"github.com/bwmarrin/discordgo"
 )
@@ -44,8 +45,11 @@ func main() {
 	var commands = []*discordgo.ApplicationCommand{testCommand}
 	commands = append(commands, rpsgame.GetRPSCommands()...)
 	commands = append(commands, observer.GetObserverCommands()...)
+	commands = append(commands, riotbot.GetCommands()...)
 
 	registerCommands(s, "", commands)
+
+	log.Printf("Done! Registered %d commands\n", len(commands))
 }
 
 func deleteCommands(s *discordgo.Session, guildID string) {

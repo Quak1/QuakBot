@@ -63,11 +63,11 @@ func (c *baseClient) do(req *http.Request, data any) error {
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var errRes errorResponse
-		if err = json.NewDecoder(res.Body).Decode(&errRes); err == nil {
-			return fmt.Errorf("%d: %s", res.StatusCode, errRes.Status.Message)
+		if err = json.NewDecoder(res.Body).Decode(&errRes); err != nil {
+			return fmt.Errorf("error with status code: %d", res.StatusCode)
 		}
 
-		return fmt.Errorf("error with status code: %d", res.StatusCode)
+		return fmt.Errorf("API error response %d: %s", res.StatusCode, errRes.Status.Message)
 	}
 
 	if err = json.NewDecoder(res.Body).Decode(&data); err != nil {

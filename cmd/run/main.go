@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/Quak1/QuakBot/internal/observer"
+	"github.com/Quak1/QuakBot/internal/riotbot"
 	rpsgame "github.com/Quak1/QuakBot/internal/rpsGame"
 	"github.com/bwmarrin/discordgo"
 )
@@ -41,6 +42,7 @@ func main() {
 
 	maps.Copy(handlers, rpsgame.GetRPSHandlers())
 	maps.Copy(handlers, observer.GetObserverHandlers())
+	maps.Copy(handlers, riotbot.GetHandlers())
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		var name string
 		switch i.Type {

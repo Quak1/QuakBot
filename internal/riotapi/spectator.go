@@ -34,6 +34,7 @@ type CurrentGameParticipant struct {
 	ProfileIconID            int64                      `json:"profileIconId"`
 	Bot                      bool                       `json:"bot"`
 	TeamID                   int64                      `json:"teamId"`
+	RiotID                   string                     `json:"riotId"`
 	PUUID                    string                     `json:"puuid"`
 	Spell1ID                 int64                      `json:"spell1Id"`
 	Spell2ID                 int64                      `json:"spell2Id"`

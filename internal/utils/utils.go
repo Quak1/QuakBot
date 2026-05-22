@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/bwmarrin/discordgo"
@@ -36,4 +37,27 @@ func GetAndParseJSON(url string, data any) error {
 	}
 
 	return nil
+}
+
+func InteractionErrorResponse(s *discordgo.Session, i *discordgo.InteractionCreate, err error, msg string) {
+	log.Println(err)
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: msg,
+		},
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func InteractionFollowUpErrorResponse(s *discordgo.Session, i *discordgo.InteractionCreate, err error, msg string) {
+	log.Println(err)
+	_, err = s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
+		Content: msg,
+	})
+	if err != nil {
+		log.Println(err)
+	}
 }
