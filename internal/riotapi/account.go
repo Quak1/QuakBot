@@ -16,7 +16,7 @@ type AccountDto struct {
 
 const accountURL = "riot/account/v1/accounts"
 
-func NewAccountClient(c *baseClient) *AccountClient {
+func newAccountClient(c *baseClient) *AccountClient {
 	return &AccountClient{
 		c: c,
 	}

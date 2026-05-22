@@ -1,6 +1,11 @@
 package utils
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 func FirstLetterToUpper(s string) string {
 	if len(s) != 0 && s[0] >= 'a' && s[0] <= 'z' {
@@ -16,4 +21,19 @@ func GetUserID(i *discordgo.InteractionCreate) string {
 		user = i.Member.User
 	}
 	return user.ID
+}
+
+func GetAndParseJSON(url string, data any) error {
+	res, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
