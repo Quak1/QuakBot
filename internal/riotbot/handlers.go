@@ -18,17 +18,24 @@ func GetHandlers() map[string]func(*discordgo.Session, *discordgo.InteractionCre
 
 func handleLivegameCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	data := i.ApplicationCommandData()
-	name := data.Options[0].Value.(string)
-	tag := data.Options[1].Value.(string)
-	log.Printf("Info request for: %s#%s", name, tag)
+	region := data.Options[0].Value.(string)
+	name := data.Options[1].Value.(string)
+	tag := data.Options[2].Value.(string)
+	log.Printf("Info request for: %s#%s @ %s", name, tag, region)
 
-	rc, err := riotapi.NewClient(riotapi.NorthAmerica, RIOT_TOKEN)
-	if err != nil {
-		utils.InteractionErrorResponse(s, i, err, "There was an error. Try again later!")
-		return
+	if _, ok := riotClients[region]; !ok {
+		rc, err := riotapi.NewClient(riotapi.Region(region), RIOT_TOKEN)
+		if err != nil {
+			utils.InteractionErrorResponse(s, i, err, "There was an error. Try again later!")
+			return
+		}
+
+		riotClients[region] = rc
 	}
 
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	rc := riotClients[region]
+
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Loading...",

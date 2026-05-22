@@ -36,6 +36,8 @@ type result struct {
 	err    error
 }
 
+var riotClients = map[string]*riotapi.Client{}
+
 const (
 	ddImgFormat = "https://ddragon.leagueoflegends.com/cdn/img/champion/tiles/%s_0.jpg"
 )

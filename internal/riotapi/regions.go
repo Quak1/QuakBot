@@ -21,6 +21,25 @@ const (
 	Vietnam           Region = "vn2"
 )
 
+var Regions = []Region{
+	Brasil,
+	EuropeNordicEast,
+	EuropeWest,
+	Japan,
+	Korea,
+	LatinAmericaNorth,
+	LatinAmericaSouth,
+	MiddleEast,
+	NorthAmerica,
+	Oceania,
+	PBE,
+	Russia,
+	SouthEastAsia,
+	Turkey,
+	Taiwan,
+	Vietnam,
+}
+
 type Area string
 
 const (

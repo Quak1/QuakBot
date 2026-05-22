@@ -1,6 +1,9 @@
 package riotbot
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/Quak1/QuakBot/internal/riotapi"
+	"github.com/bwmarrin/discordgo"
+)
 
 func GetCommands() []*discordgo.ApplicationCommand {
 	cmds := []*discordgo.ApplicationCommand{
@@ -8,6 +11,13 @@ func GetCommands() []*discordgo.ApplicationCommand {
 			Name:        "livegame",
 			Description: "Get live game information",
 			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "region",
+					Description: "Region",
+					Required:    true,
+					Choices:     getRegionChoices(),
+				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "name",
@@ -25,4 +35,16 @@ func GetCommands() []*discordgo.ApplicationCommand {
 	}
 
 	return cmds
+}
+
+func getRegionChoices() []*discordgo.ApplicationCommandOptionChoice {
+	choices := []*discordgo.ApplicationCommandOptionChoice{}
+	for _, r := range riotapi.Regions {
+		choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  string(r),
+			Value: r,
+		})
+	}
+
+	return choices
 }
