@@ -11,11 +11,11 @@ import (
 )
 
 type player struct {
-	puuid        string
-	name         string
-	championName string
-	solo         *queueRank
-	flex         *queueRank
+	puuid          string
+	name           string
+	championNameID string
+	solo           *queueRank
+	flex           *queueRank
 }
 
 type queueRank struct {
@@ -105,13 +105,10 @@ func getGamePlayerInfo(rc *riotapi.Client, game *riotapi.CurrentGameInfo) (*game
 		}
 
 		participant := player{
-			puuid:        res.player.PUUID,
-			name:         res.player.RiotID,
-			championName: rc.Champions[int(res.player.ChampionID)],
-		}
-
-		if len(res.ranks) == 0 {
-			participant.solo = &queueRank{}
+			puuid:          res.player.PUUID,
+			name:           res.player.RiotID,
+			championNameID: rc.Champions[int(res.player.ChampionID)],
+			solo:           &queueRank{},
 		}
 
 		if res.player.PUUID == "" {
@@ -180,14 +177,14 @@ func parsePlayer(p *player) discordgo.Section {
 		flexStr = "`F:`" + fmt.Sprintf(strFormat, leagueToEmoji[p.flex.league], divisionToEmoji[p.flex.division], p.flex.wins, p.flex.loses, flexWr)
 	}
 
-	if p.championName == "Wukong" {
-		p.championName = "Monkey King"
+	if p.championNameID == "Fiddlesticks" {
+		p.championNameID = "FiddleSticks"
 	}
 
 	return discordgo.Section{
 		Accessory: discordgo.Thumbnail{
 			Media: discordgo.UnfurledMediaItem{
-				URL: fmt.Sprintf(ddImgFormat, strings.ReplaceAll(p.championName, " ", "")),
+				URL: fmt.Sprintf(ddImgFormat, strings.ReplaceAll(p.championNameID, " ", "")),
 			},
 		},
 		Components: []discordgo.MessageComponent{

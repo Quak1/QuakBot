@@ -28,6 +28,7 @@ type ddChampions struct {
 	Data map[string]struct {
 		Key  string `json:"key"`
 		Name string `json:"name"`
+		ID   string `json:"id"`
 	}
 }
 type ChampionNameByID map[int]string
@@ -49,7 +50,7 @@ func DownloadConstants(championURL, queuesURL string) error {
 		if err != nil {
 			return err
 		}
-		champions[key] = c.Name
+		champions[key] = c.ID
 	}
 
 	queues := make(QueuesByID)
